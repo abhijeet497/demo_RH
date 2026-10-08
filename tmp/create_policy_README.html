@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Creating Policies in Traceforce</title>
+  <style>
+    :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    body { margin: 0; background: #f8fafc; color: #1e293b; }
+    main { max-width: 800px; margin: 40px auto; padding: 40px 48px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 8px 30px rgb(15 23 42 / 6%); }
+    h1 { margin-top: 0; font-size: 2rem; }
+    h2 { margin-top: 2rem; padding-bottom: .4rem; border-bottom: 1px solid #e2e8f0; font-size: 1.25rem; }
+    p, li { line-height: 1.65; }
+    li + li { margin-top: .25rem; }
+    strong { color: #0f172a; }
+    @media (prefers-color-scheme: dark) {
+      body { background: #0f172a; color: #cbd5e1; }
+      main { background: #111827; border-color: #334155; }
+      h2 { border-color: #334155; }
+      strong { color: #f8fafc; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Creating Policies in Traceforce</h1>
+
+    <h2>Overview</h2>
+    <p>Policies apply a risk framework to selected AI agents and devices. New policies are created inactive so you can review their controls before activation.</p>
+
+    <h2>Create a policy</h2>
+    <ol>
+      <li>Open <strong>Policies</strong> and select <strong>New Policy</strong>.</li>
+      <li>Enter a unique name and optional description.</li>
+      <li>Choose an agent category:
+        <ul>
+          <li><strong>General Purpose Agents:</strong> Claude, ChatGPT, and Microsoft 365 Copilot.</li>
+          <li><strong>Coding Agents:</strong> Cursor, Claude Code, and GitHub Copilot.</li>
+        </ul>
+      </li>
+      <li>Select an agent risk framework and review the selected agents.</li>
+      <li>Apply the policy to <strong>All Devices</strong> or selected <strong>User Groups</strong>.</li>
+      <li>Create the policy, review its controls, then activate it from the policy details page.</li>
+    </ol>
+    <p>Both categories use the same agent risk framework. Coding agents generally support more enforcement capabilities, so more of their controls may be enforceable rather than monitor-only.</p>
+
+    <h2>Policy controls</h2>
+    <p>Each supported framework rule becomes a policy control with:</p>
+    <ul>
+      <li>an enabled or disabled state;</li>
+      <li>a requirement; and</li>
+      <li>an action to take when the requirement is violated.</li>
+    </ul>
+    <p>Traceforce groups controls by capability:</p>
+    <ul>
+      <li><strong>Enforceable by Traceforce:</strong> Traceforce can detect violations and apply a compatible enforcement action.</li>
+      <li><strong>Monitor &amp; Alert:</strong> Traceforce can detect violations, but the selected agents do not support an enforcement action yet.</li>
+    </ul>
+    <p>Available actions depend on the selected agents and their remediation compatibility. Coding-agent policies typically have more enforceable options.</p>
+    <p>Some controls have additional settings. For example, Sensitive Data controls can target specific data types, while User Activity Logging controls can redact sensitive data from stored logs.</p>
+
+    <h2>Activate or deactivate</h2>
+    <p>Use the status action beside the policy name on the policy details page. Activating or deactivating a policy does not remove its scope or control configuration.</p>
+  </main>
+</body>
+</html>
