@@ -21,6 +21,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Building2, Clock, Handshake, Loader2, Shield } from 'lucide-react';
+import { DevLoginBypass } from '@/components/DevLoginBypass';
 
 const trialMode = import.meta.env.VITE_TRIAL_MODE === 'true';
 const MSP_ASSESSMENT_URL = 'https://port1.io/traceforce?utm_source=traceforce&utm_medium=referral&utm_campaign=trial-router';
@@ -223,6 +224,7 @@ const Auth = () => {
     <div className="relative isolate min-h-screen flex flex-col items-center justify-center gap-6 overflow-hidden p-4">
       <AuthPageBackdrop />
       <TraceforceLogoMark />
+      <DevLoginBypass />
 
       {idleSignedOut && (
         <Alert className="w-full max-w-md">

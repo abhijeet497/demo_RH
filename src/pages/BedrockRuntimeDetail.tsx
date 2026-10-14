@@ -1,7 +1,9 @@
 import { useAuth } from "@/contexts/AuthContext"
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ChevronDown, ChevronRight, Download, Info, Network, Wrench } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronRight, Download, Info, Network, Wrench, Target } from "lucide-react";
+import { useRedTeam } from "@/lib/redteam/store";
+import { RED_TEAM_INVENTORY, isRedTeamRuntime } from "@/lib/redteam/targetAgent";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -657,6 +659,8 @@ const ConnectedMcpsSection = ({
 
 const BedrockRuntimeDetail = () => {
   const { account, region = "", runtimeId = "" } = useParams();
+  const isRedTeamTarget = isRedTeamRuntime(account, region, runtimeId);
+  const { startTest } = useRedTeam();
   const navigate = useNavigate();
   const location = useLocation();
   const { activeOrgId } = useOrg();
@@ -674,6 +678,13 @@ const BedrockRuntimeDetail = () => {
     let cancelled = false;
     setLoading(true);
     setLoadFailed(false);
+    // The red-team target lives in the mock inventory, not the backend: resolve
+    // it directly so the page renders without waiting on the inventory API.
+    if (isRedTeamTarget) {
+      setInventory(RED_TEAM_INVENTORY);
+      setLoading(false);
+      return;
+    }
     // The catalog and org lookups only enrich the MCP rows, so a failure in
     // either must not keep the rest of the runtime from rendering.
     const emptyRollup = () => new Map<number, McpOrgRollup>();
@@ -766,6 +777,18 @@ const BedrockRuntimeDetail = () => {
             AWS Bedrock AgentCore runtime — account {runtimeAccount} · {regionInventory.region}
           </p>
         </div>
+        {isRedTeamTarget && (
+          <Button
+            className="ml-auto gap-2"
+            onClick={() => {
+              startTest();
+              navigate("/red-teaming");
+            }}
+          >
+            <Target className="h-4 w-4" />
+            Test Agent
+          </Button>
+        )}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

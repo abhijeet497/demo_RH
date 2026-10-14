@@ -20,6 +20,8 @@ import Agents from "./pages/Agents";
 import AgentDetail from "./pages/AgentDetail";
 import BedrockRuntimeDetail from "./pages/BedrockRuntimeDetail";
 import AgentIssues from "./pages/AgentIssues";
+import RedTeaming from "./pages/RedTeaming";
+import { RedTeamProvider } from "@/lib/redteam/store";
 import Policies from "./pages/Policies";
 import PolicyDetail from "./pages/PolicyDetail";
 import McpAccessPolicyDetail from "./pages/McpAccessPolicyDetail";
@@ -93,7 +95,9 @@ const AppShell: React.FC = () => {
                 <Button variant="outline" onClick={() => window.location.reload()}>Reload</Button>
               </div>
             ) : (
-              <AppRoutes key={activeOrgId} />
+              <RedTeamProvider>
+                <AppRoutes key={activeOrgId} />
+              </RedTeamProvider>
             )}
           </main>
         </div>
@@ -129,6 +133,7 @@ const AdminRoutes = () => {
     {awsBedrockEnabled && <Route path="/bedrock-inventory/:account/:region/:runtimeId" element={<BedrockRuntimeDetail />} />}
     {awsBedrockEnabled && <Route path="/bedrock-inventory/:region/:runtimeId" element={<BedrockRuntimeDetail />} />}
     <Route path="/agent-issues" element={<AgentIssues />} />
+    <Route path="/red-teaming" element={<RedTeaming />} />
     <Route path="/agents/:id" element={<AgentDetail />} />
     <Route path="/policies" element={<Policies />} />
     <Route path="/policies/:id" element={<PolicyDetail />} />
@@ -216,6 +221,21 @@ const App = () => (
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            {/* Unauthenticated preview of the Red Teaming module (local data only,
+                no backend). Lets the UI be reviewed without an SSO login. */}
+            <Route
+              path="/preview/red-teaming"
+              element={
+                <RedTeamProvider>
+                  <div className="min-h-screen bg-background">
+                    <div className="border-b bg-muted/50 px-4 py-2 text-xs text-muted-foreground">
+                      Preview · Red Teaming · local recorded data · not signed in
+                    </div>
+                    <RedTeaming preview />
+                  </div>
+                </RedTeamProvider>
+              }
+            />
             <Route
               path="/*"
               element={

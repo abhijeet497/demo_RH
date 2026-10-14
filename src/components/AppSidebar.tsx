@@ -1,4 +1,4 @@
-import { Users, Settings, Shield, ChevronDown, Network, PlayCircle, AlertTriangle, LayoutDashboard, Building2, ClipboardList, Globe, Package } from "lucide-react"
+import { Users, Settings, Shield, ChevronDown, Network, PlayCircle, AlertTriangle, LayoutDashboard, Building2, ClipboardList, Globe, Package, Target } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useEffect, useState } from "react"
 import traceforceLogo from "/lovable-uploads/new-icon.png"
@@ -216,6 +216,17 @@ export function AppSidebar() {
                     </SidebarMenu>
                   </CollapsibleContent>
                 </Collapsible>
+              </SidebarMenuItem>
+              )}
+
+              {!isRegularUser && (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <NavLink to="/red-teaming" end className={getNavCls}>
+                    <Target className="mr-2 h-4 w-4" />
+                    <span>Red Teaming</span>
+                  </NavLink>
+                </SidebarMenuButton>
               </SidebarMenuItem>
               )}
 

@@ -25,3 +25,8 @@ dist-ssr
 bun.lock
 .vercel
 supabase/.temp
+
+.env
+
+scripts/dev-session.json
+scripts/DEV-LOGIN.md

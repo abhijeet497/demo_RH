@@ -510,6 +510,7 @@ const AgentIssues = () => {
       </div>
 
       <AgentIssuesTable
+        showRedTeamFindings
         violations={violations}
         selectedStatus={selectedStatus}
         loading={issuesLoading}

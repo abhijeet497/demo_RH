@@ -104,7 +104,7 @@ const AgentDetail = () => {
   useEffect(() => {
     const fetchAgent = async () => {
       if (!id) return
-      
+
       setLoading(true)
       
       try {

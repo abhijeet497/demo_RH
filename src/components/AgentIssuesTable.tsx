@@ -3,7 +3,10 @@ import { orgRpcArgs } from '@/lib/orgScope';
 import { supabase } from "@/integrations/supabase/client"
 import { DeviceOwnerHeader } from "@/components/DeviceOwnerHeader"
 import { useNavigate, Link } from "react-router-dom"
-import { ArrowLeft, AlertTriangle, Eye, EyeOff, Laptop, Download, Loader2, XCircle, RotateCcw, Info, MoreVertical, CheckCircle2, Lock, ChevronDown, ChevronLeft, ChevronRight, Copy, Check, Paperclip, MessageSquare, ExternalLink } from "lucide-react"
+import { ArrowLeft, AlertTriangle, Eye, EyeOff, Laptop, Download, Loader2, XCircle, RotateCcw, Info, MoreVertical, CheckCircle2, Lock, ChevronDown, ChevronLeft, ChevronRight, Copy, Check, Paperclip, MessageSquare, ExternalLink, Target } from "lucide-react"
+import { useRedTeam, type Finding } from "@/lib/redteam/store"
+import { FindingDialog, RedTeamIncidentsDialog, groupRedTeamFindings, type RedTeamGroup } from "@/components/redteam/RedTeamFindings"
+import { ASSESSMENT, BRAINTRUST } from "@/lib/redteam/dataset"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -311,6 +314,8 @@ interface AgentIssuesTableProps {
   onRefresh: () => void
   fetchDeviceData: (issueTypeControlId: string, limit?: number, riskRuleType?: number) => Promise<any[]>
   onIssueTypeClick?: (riskRuleId: string, frameworkId: string) => void
+  /** Show red-team findings as rows in Controllable Issues (Agent Issues page only). */
+  showRedTeamFindings?: boolean
 }
 
 const AgentIssuesTable = ({
@@ -321,11 +326,22 @@ const AgentIssuesTable = ({
   onRefresh,
   fetchDeviceData,
   onIssueTypeClick,
+  showRedTeamFindings = false,
 }: AgentIssuesTableProps) => {
   const navigate = useNavigate()
   const { toast } = useToast()
   const { session } = useAuth()
   const { activeOrgId } = useOrg()
+  // Red-team findings join Controllable Issues only after a test has completed.
+  const { findings: redTeamFindings, runState: redTeamRunState } = useRedTeam()
+  const [redTeamFinding, setRedTeamFinding] = useState<Finding | null>(null)
+  const [redTeamGroup, setRedTeamGroup] = useState<RedTeamGroup | null>(null)
+  // One row per issue type, aggregated across every tested agent — the same
+  // model as the device rows: a type with N incidents, drill in for the list.
+  const redTeamRows: RedTeamGroup[] =
+    showRedTeamFindings && redTeamRunState === "completed"
+      ? groupRedTeamFindings(redTeamFindings)
+      : []
 
   const [exportLoading, setExportLoading] = useState<string | null>(null)
   const [showIncidentModal, setShowIncidentModal] = useState(false)
@@ -1624,8 +1640,89 @@ const AgentIssuesTable = ({
     </TableRow>
   )
 
+  // Same cells as renderIssueRow, fed by a grouped red-team issue type. The
+  // incidents pill and the menu open the per-agent incident list.
+  const renderRedTeamGroupRow = (group: RedTeamGroup) => {
+    const detected = new Date(ASSESSMENT.recordedAt)
+    const n = group.incidents.length
+    return (
+      <TableRow key={`rt-${group.plugin}`}>
+        <TableCell>
+          <div
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => setRedTeamGroup(group)}
+          >
+            <Badge variant={group.severity === "High" ? "danger" : "warning"} className="gap-1.5">
+              <Target className="h-3.5 w-3.5" />
+              {n} incident{n > 1 ? 's' : ''}
+            </Badge>
+          </div>
+        </TableCell>
+        <TableCell className="font-medium max-w-md">
+          <div className="break-words">{group.title}</div>
+        </TableCell>
+        <TableCell className="align-middle">
+          <div className="space-y-1">
+            <button
+              onClick={() => setRedTeamGroup(group)}
+              className="hover:opacity-80 transition-opacity cursor-pointer text-left text-sm font-medium underline decoration-dotted underline-offset-2"
+            >
+              {group.category}
+            </button>
+            <a
+              href={BRAINTRUST.traceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex w-fit items-center gap-1 text-xs text-primary hover:underline"
+            >
+              Trace in Braintrust
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </TableCell>
+        <TableCell>{getIssueStatusBadge(1)}</TableCell>
+        <TableCell>
+          {detected.toLocaleDateString('en-US', {
+            year: 'numeric', month: 'short', day: 'numeric'
+          })} {detected.toLocaleTimeString('en-US', {
+            hour: '2-digit', minute: '2-digit'
+          })}
+        </TableCell>
+        <TableCell className="text-sm text-muted-foreground max-w-md">
+          <div className="break-words">{group.remediation}</div>
+        </TableCell>
+        <TableCell>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {/* Defer one tick so the menu finishes closing before the dialog opens. */}
+              <DropdownMenuItem onSelect={() => setTimeout(() => setRedTeamGroup(group), 0)}>
+                <Eye className="h-4 w-4 mr-2" />
+                View Incidents
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </TableCell>
+      </TableRow>
+    )
+  }
+
   return (
     <>
+      <RedTeamIncidentsDialog
+        group={redTeamGroup}
+        onClose={() => setRedTeamGroup(null)}
+        onOpenFinding={(f) => {
+          setRedTeamGroup(null)
+          // Let the incidents dialog close before the finding dialog opens.
+          setTimeout(() => setRedTeamFinding(f), 0)
+        }}
+      />
+      <FindingDialog finding={redTeamFinding} onClose={() => setRedTeamFinding(null)} />
       {/* Severity Legend */}
       <div className="mb-4">
         <div className="inline-flex items-center gap-4 text-sm bg-muted/50 rounded-lg px-4 py-2">
@@ -1641,13 +1738,13 @@ const AgentIssuesTable = ({
         </div>
       </div>
 
-      {!loading && controllableIssues.length > 0 && (
+      {!loading && (controllableIssues.length > 0 || redTeamRows.length > 0) && (
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <CardTitle>Controllable Issues</CardTitle>
-                <Badge variant="secondary">{controllableIssues.length}</Badge>
+                <Badge variant="secondary">{controllableIssues.length + redTeamRows.length}</Badge>
               </div>
               <Button
                 variant="outline"
@@ -1683,6 +1780,7 @@ const AgentIssuesTable = ({
               </TableHeader>
               <TableBody>
                 {controllableIssues.map(renderIssueRow)}
+                {redTeamRows.map(renderRedTeamGroupRow)}
               </TableBody>
             </Table>
           </CardContent>

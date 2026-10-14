@@ -20,6 +20,7 @@ import {
   fetchInventory, flattenRuntimes, runtimeToAgentRow, syncedAtMs, bedrockFilterOptions,
   BEDROCK_ENVIRONMENT_LABEL, BEDROCK_ENVIRONMENT_OPTION, BEDROCK_ENVIRONMENT_VALUE,
 } from "@/lib/bedrockInventory"
+import { RED_TEAM_AGENT } from "@/lib/redteam/targetAgent"
 import {
   getRiskLevel, formatScore, getEffectivePlan,
   RISK_LEVEL_OPTIONS, PLAN_OPTIONS, PERFORMANCE_OPTIONS,
@@ -721,7 +722,7 @@ const Agents = () => {
       <AgentsTable
         syncSearchToUrl
         showEnforcementStatus
-        agents={[...filteredAgents, ...filteredCopilotAgents, ...filteredBedrockRuntimes]}
+        agents={[...filteredAgents, ...filteredCopilotAgents, ...filteredBedrockRuntimes, ...(RED_TEAM_AGENT ? [RED_TEAM_AGENT] : [])]}
         loading={loading}
         deviceSpecificDeploymentTypes={deviceSpecificDeploymentTypes}
         deviceSpecificHasHostInstances={deviceSpecificHasHostInstances}
